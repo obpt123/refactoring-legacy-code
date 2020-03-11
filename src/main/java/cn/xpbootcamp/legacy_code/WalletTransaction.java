@@ -14,8 +14,10 @@ import javax.transaction.InvalidTransactionException;
 import com.spun.util.StringUtils;
 
 public class WalletTransaction {
-    private String transactionId;
+    private static final long MAX_EXPIRED_MILLISECOND = 20 * 24 * 3600 * 1000; // 20 days
+    private static final String TRAN_ID_PREFIX = "t_";
 
+    private String transactionId;
     private Order order;
     private STATUS status = STATUS.TO_BE_EXECUTED;
 
@@ -43,9 +45,9 @@ public class WalletTransaction {
 
     private String buildTransactionId(String preAssignedId) {
         if (StringUtils.isEmpty(preAssignedId)) {
-            return preAssignedId.startsWith("t_") ? preAssignedId : "t_" + preAssignedId;
+            return preAssignedId.startsWith(TRAN_ID_PREFIX) ? preAssignedId : "TRAN_ID_PREFIX" + preAssignedId;
         } else {
-            return "t_" + idGenerator.newId();
+            return TRAN_ID_PREFIX + idGenerator.newId();
         }
     }
 
@@ -80,8 +82,7 @@ public class WalletTransaction {
     }
 
     private boolean hasExpired() {
-        long executionInvokedTimestamp = System.currentTimeMillis();
-        return executionInvokedTimestamp - order.getCreatedTimestamp() > 20 * 24 * 3600 * 1000;
+        return System.currentTimeMillis() - order.getCreatedTimestamp() > MAX_EXPIRED_MILLISECOND;
     }
 
 }
