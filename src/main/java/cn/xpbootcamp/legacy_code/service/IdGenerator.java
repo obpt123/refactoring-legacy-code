@@ -1,5 +1,5 @@
 package cn.xpbootcamp.legacy_code.service;
 
 public interface IdGenerator {
-    String generateTransactionId();
+    String newId();
 }

@@ -7,10 +7,10 @@ import org.junit.jupiter.api.Test;
 
 public class IdGeneratorImplTest {
     @Test
-    public void shouldReturnUniqueStringWhenGenerateTransactionId() {
+    public void shouldReturnUniqueStringWhenNewId() {
         IdGenerator idGenerator=new IdGeneratorImpl();
         int loopCount = 10000;
-        long totalIds = IntStream.range(0, loopCount).boxed().map((p) -> idGenerator.generateTransactionId()).distinct()
+        long totalIds = IntStream.range(0, loopCount).boxed().map((p) -> idGenerator.newId()).distinct()
                 .count();
         assertEquals(loopCount, totalIds);
     }

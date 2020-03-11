@@ -28,7 +28,7 @@ public class WalletTransaction {
         if (preAssignedId != null && !preAssignedId.isEmpty()) {
             this.id = preAssignedId;
         } else {
-            this.id = idGenerator.generateTransactionId();
+            this.id = idGenerator.newId();
         }
         if (!this.id.startsWith("t_")) {
             this.id = "t_" + preAssignedId;

@@ -16,6 +16,6 @@ public class WalletServiceImpl implements WalletService {
         User seller = userRepository.find(sellerId);
         seller.setBalance(seller.getBalance() + amount);
         buyer.setBalance(buyer.getBalance() - amount);
-        return idGenerator.generateTransactionId() + tranId;
+        return idGenerator.newId() + tranId;
     }
 }

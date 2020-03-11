@@ -5,7 +5,7 @@ import java.util.UUID;
 public class IdGeneratorImpl implements IdGenerator {
 
     @Override
-    public String generateTransactionId() {
+    public String newId() {
         return UUID.randomUUID().toString();
     }
 }
