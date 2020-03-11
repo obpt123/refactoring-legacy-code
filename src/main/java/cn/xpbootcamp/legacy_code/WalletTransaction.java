@@ -1,11 +1,12 @@
 package cn.xpbootcamp.legacy_code;
 
 import cn.xpbootcamp.legacy_code.enums.STATUS;
+import cn.xpbootcamp.legacy_code.service.DistributedLock;
 import cn.xpbootcamp.legacy_code.service.IdGenerator;
 import cn.xpbootcamp.legacy_code.service.IdGeneratorImpl;
+import cn.xpbootcamp.legacy_code.service.RedisDistributedLockImpl;
 import cn.xpbootcamp.legacy_code.service.WalletService;
 import cn.xpbootcamp.legacy_code.service.WalletServiceImpl;
-import cn.xpbootcamp.legacy_code.utils.RedisDistributedLock;
 
 import javax.transaction.InvalidTransactionException;
 
@@ -21,7 +22,7 @@ public class WalletTransaction {
     private String walletTransactionId;
 
     WalletService walletService = new WalletServiceImpl();
-    RedisDistributedLock distributedLock = new RedisDistributedLock();
+    DistributedLock distributedLock = new RedisDistributedLockImpl();
     IdGenerator idGenerator = new IdGeneratorImpl();
 
     public WalletTransaction(String preAssignedId, Long buyerId, Long sellerId, Long productId, String orderId) {

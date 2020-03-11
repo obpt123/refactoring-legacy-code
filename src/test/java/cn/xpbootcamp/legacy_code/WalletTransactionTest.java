@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.reflection.FieldSetter;
 
+import cn.xpbootcamp.legacy_code.service.DistributedLock;
 import cn.xpbootcamp.legacy_code.service.WalletService;
 import cn.xpbootcamp.legacy_code.utils.RedisDistributedLock;
 
@@ -17,7 +18,7 @@ public class WalletTransactionTest {
     @Test
     public void shouldReturnTrueWhenExecuteAndCanLock() throws InvalidTransactionException {
 
-        RedisDistributedLock redisDistributedLock = createDistributedLock(true);
+        DistributedLock redisDistributedLock = createDistributedLock(true);
         WalletService walletService = createWalletService("fake_moveMoneyId");
         WalletTransaction transaction = new WalletTransaction("fake_preId", 1L, 2L, 123L, "fake_orderId");
         setDistributedLock(transaction, redisDistributedLock);
@@ -31,7 +32,7 @@ public class WalletTransactionTest {
     @Test
     public void shouldReturnFalseWhenExecuteAndCannotLock() throws InvalidTransactionException {
 
-        RedisDistributedLock redisDistributedLock = createDistributedLock(false);
+        DistributedLock redisDistributedLock = createDistributedLock(false);
         WalletService walletService = createWalletService("fake_moveMoneyId");
         WalletTransaction transaction = new WalletTransaction("fake_preId", 1L, 2L, 123L, "fake_orderId");
         setDistributedLock(transaction, redisDistributedLock);
@@ -45,7 +46,7 @@ public class WalletTransactionTest {
     @Test
     public void shouldReturnFalseWhenExecuteAndCannotMoveMoney() throws InvalidTransactionException {
 
-        RedisDistributedLock redisDistributedLock = createDistributedLock(false);
+        DistributedLock redisDistributedLock = createDistributedLock(false);
         WalletService walletService = createWalletService(null);
         WalletTransaction transaction = new WalletTransaction("fake_preId", 1L, 2L, 123L, "fake_orderId");
         setDistributedLock(transaction, redisDistributedLock);
@@ -56,8 +57,8 @@ public class WalletTransactionTest {
         assertEquals(false, executeResult);
     }
 
-    private RedisDistributedLock createDistributedLock(boolean lockedResult) {
-        RedisDistributedLock mockedRedisLock = mock(RedisDistributedLock.class);
+    private DistributedLock createDistributedLock(boolean lockedResult) {
+        DistributedLock mockedRedisLock = mock(DistributedLock.class);
         when(mockedRedisLock.lock(anyString())).thenReturn(lockedResult);
         return mockedRedisLock;
     }
@@ -68,7 +69,7 @@ public class WalletTransactionTest {
         return mockedWalletService;
     }
 
-    private void setDistributedLock(WalletTransaction walletTransaction, RedisDistributedLock distributedLock) {
+    private void setDistributedLock(WalletTransaction walletTransaction, DistributedLock distributedLock) {
         try {
             Field distributedLockField = WalletTransaction.class.getDeclaredField("distributedLock");
             FieldSetter.setField(walletTransaction, distributedLockField, distributedLock);
