@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.reflection.FieldSetter;
 
 import cn.xpbootcamp.legacy_code.service.DistributedLock;
-import cn.xpbootcamp.legacy_code.service.RedisDistributedLockImpl;
 import cn.xpbootcamp.legacy_code.service.WalletService;
 
 public class WalletTransactionTest {
