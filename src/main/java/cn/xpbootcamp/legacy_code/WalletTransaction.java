@@ -10,6 +10,8 @@ import cn.xpbootcamp.legacy_code.service.WalletServiceImpl;
 
 import javax.transaction.InvalidTransactionException;
 
+import com.spun.util.StringUtils;
+
 public class WalletTransaction {
     private String id;
     private Long buyerId;
@@ -26,20 +28,21 @@ public class WalletTransaction {
     IdGenerator idGenerator = new IdGeneratorImpl();
 
     public WalletTransaction(String preAssignedId, Long buyerId, Long sellerId, Long productId, String orderId) {
-        if (preAssignedId != null && !preAssignedId.isEmpty()) {
-            this.id = preAssignedId;
-        } else {
-            this.id = idGenerator.newId();
-        }
-        if (!this.id.startsWith("t_")) {
-            this.id = "t_" + preAssignedId;
-        }
+        this.id = buildId(preAssignedId);
         this.buyerId = buyerId;
         this.sellerId = sellerId;
         this.productId = productId;
         this.orderId = orderId;
         this.status = STATUS.TO_BE_EXECUTED;
         this.createdTimestamp = System.currentTimeMillis();
+    }
+
+    private String buildId(String preAssignedId) {
+        if (StringUtils.isEmpty(preAssignedId)) {
+            return preAssignedId.startsWith("t_") ? preAssignedId : "t_" + preAssignedId;
+        } else {
+            return "t_" + idGenerator.newId();
+        }
     }
 
     public boolean execute() throws InvalidTransactionException {
