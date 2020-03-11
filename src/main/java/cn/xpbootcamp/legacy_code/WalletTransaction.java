@@ -1,9 +1,10 @@
 package cn.xpbootcamp.legacy_code;
 
 import cn.xpbootcamp.legacy_code.enums.STATUS;
+import cn.xpbootcamp.legacy_code.service.IdGenerator;
+import cn.xpbootcamp.legacy_code.service.IdGeneratorImpl;
 import cn.xpbootcamp.legacy_code.service.WalletService;
 import cn.xpbootcamp.legacy_code.service.WalletServiceImpl;
-import cn.xpbootcamp.legacy_code.utils.IdGenerator;
 import cn.xpbootcamp.legacy_code.utils.RedisDistributedLock;
 
 import javax.transaction.InvalidTransactionException;
@@ -20,13 +21,14 @@ public class WalletTransaction {
     private String walletTransactionId;
 
     WalletService walletService = new WalletServiceImpl();
-    RedisDistributedLock distributedLock =new RedisDistributedLock();
+    RedisDistributedLock distributedLock = new RedisDistributedLock();
+    IdGenerator idGenerator = new IdGeneratorImpl();
 
     public WalletTransaction(String preAssignedId, Long buyerId, Long sellerId, Long productId, String orderId) {
         if (preAssignedId != null && !preAssignedId.isEmpty()) {
             this.id = preAssignedId;
         } else {
-            this.id = IdGenerator.generateTransactionId();
+            this.id = idGenerator.generateTransactionId();
         }
         if (!this.id.startsWith("t_")) {
             this.id = "t_" + preAssignedId;
@@ -43,7 +45,8 @@ public class WalletTransaction {
         if (buyerId == null || (sellerId == null || amount < 0.0)) {
             throw new InvalidTransactionException("This is an invalid transaction");
         }
-        if (status == STATUS.EXECUTED) return true;
+        if (status == STATUS.EXECUTED)
+            return true;
         boolean isLocked = false;
         try {
             isLocked = distributedLock.lock(id);
@@ -52,7 +55,8 @@ public class WalletTransaction {
             if (!isLocked) {
                 return false;
             }
-            if (status == STATUS.EXECUTED) return true; // double check
+            if (status == STATUS.EXECUTED)
+                return true; // double check
             long executionInvokedTimestamp = System.currentTimeMillis();
             // 交易超过20天
             if (executionInvokedTimestamp - createdTimestamp > 1728000000) {
