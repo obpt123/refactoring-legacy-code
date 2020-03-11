@@ -46,9 +46,7 @@ public class WalletTransaction {
     }
 
     public boolean execute() throws InvalidTransactionException {
-        if (buyerId == null || (sellerId == null || amount < 0.0)) {
-            throw new InvalidTransactionException("This is an invalid transaction");
-        }
+        validateInput();
         if (status == STATUS.EXECUTED)
             return true;
         boolean isLocked = false;
@@ -61,9 +59,8 @@ public class WalletTransaction {
             }
             if (status == STATUS.EXECUTED)
                 return true; // double check
-            long executionInvokedTimestamp = System.currentTimeMillis();
-            // 交易超过20天
-            if (executionInvokedTimestamp - createdTimestamp > 1728000000) {
+
+            if (hasExpired()) {
                 this.status = STATUS.EXPIRED;
                 return false;
             }
@@ -81,6 +78,17 @@ public class WalletTransaction {
                 distributedLock.unlock(id);
             }
         }
+    }
+
+    private void validateInput() throws InvalidTransactionException {
+        if (buyerId == null || sellerId == null || amount < 0.0) {
+            throw new InvalidTransactionException("This is an invalid transaction");
+        }
+    }
+
+    private boolean hasExpired() {
+        long executionInvokedTimestamp = System.currentTimeMillis();
+        return executionInvokedTimestamp - createdTimestamp > 20 * 24 * 3600 * 1000;
     }
 
 }
