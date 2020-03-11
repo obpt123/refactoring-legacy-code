@@ -14,12 +14,12 @@ import com.spun.util.StringUtils;
 
 public class WalletTransaction {
     private String id;
-    private Long buyerId;
-    private Long sellerId;
-    private Long productId;
+    private long buyerId;
+    private long sellerId;
+    private long productId;
     private String orderId;
-    private Long createdTimestamp;
-    private Double amount = Double.valueOf(0);
+    private long createdTimestamp;
+    private double amount = 0;
     private STATUS status;
     private String walletTransactionId;
 
@@ -27,7 +27,7 @@ public class WalletTransaction {
     DistributedLock distributedLock = new RedisDistributedLockImpl();
     IdGenerator idGenerator = new IdGeneratorImpl();
 
-    public WalletTransaction(String preAssignedId, Long buyerId, Long sellerId, Long productId, String orderId) {
+    public WalletTransaction(String preAssignedId, long buyerId, long sellerId, long productId, String orderId) {
         this.id = buildId(preAssignedId);
         this.buyerId = buyerId;
         this.sellerId = sellerId;
@@ -47,10 +47,9 @@ public class WalletTransaction {
 
     public boolean execute() throws InvalidTransactionException {
         validateInput();
-        if (!hasExecuted()){
-            
-        }
+        if (hasExecuted()){
             return true;
+        }
         distributedLock.runWithLock(this.id, () -> {
             if (hasExecuted()) {
                 return;
@@ -74,7 +73,7 @@ public class WalletTransaction {
     }
 
     private void validateInput() throws InvalidTransactionException {
-        if (buyerId == null || sellerId == null || amount < 0.0) {
+        if (amount < 0.0) {
             throw new InvalidTransactionException("This is an invalid transaction");
         }
     }
