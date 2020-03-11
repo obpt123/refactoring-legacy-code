@@ -6,8 +6,6 @@ import cn.xpbootcamp.legacy_code.service.DistributedLock;
 import cn.xpbootcamp.legacy_code.service.IdGenerator;
 import cn.xpbootcamp.legacy_code.service.IdGeneratorImpl;
 import cn.xpbootcamp.legacy_code.service.RedisDistributedLockImpl;
-import cn.xpbootcamp.legacy_code.service.SystemClocker;
-import cn.xpbootcamp.legacy_code.service.SystemClockerImpl;
 import cn.xpbootcamp.legacy_code.service.WalletService;
 import cn.xpbootcamp.legacy_code.service.WalletServiceImpl;
 
@@ -25,7 +23,6 @@ public class WalletTransaction {
     WalletService walletService = new WalletServiceImpl();
     DistributedLock distributedLock = new RedisDistributedLockImpl();
     IdGenerator idGenerator = new IdGeneratorImpl();
-    SystemClocker systemClocker = new SystemClockerImpl();
 
     public WalletTransaction(String preAssignedId, Order order) {
         this.id = buildId(preAssignedId);
@@ -89,7 +86,7 @@ public class WalletTransaction {
     }
 
     private boolean hasExpired() {
-        long executionInvokedTimestamp = systemClocker.currentTimeMillis();
+        long executionInvokedTimestamp = System.currentTimeMillis();
         return executionInvokedTimestamp - order.getCreatedTimestamp() > 20 * 24 * 3600 * 1000;
     }
 
