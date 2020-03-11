@@ -9,7 +9,7 @@ public interface DistributedLock {
     default boolean runWithLock(String lockKey, Action action) {
         boolean locked = lock(lockKey);
         try {
-            if (action != null) {
+            if (locked && action != null) {
                 action.run();
             }
             return locked;

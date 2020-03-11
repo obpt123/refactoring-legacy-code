@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.reflection.FieldSetter;
 
 import cn.xpbootcamp.legacy_code.service.DistributedLock;
+import cn.xpbootcamp.legacy_code.service.RedisDistributedLockImpl;
 import cn.xpbootcamp.legacy_code.service.WalletService;
-import cn.xpbootcamp.legacy_code.utils.RedisDistributedLock;
 
 public class WalletTransactionTest {
     @Test
@@ -58,8 +58,15 @@ public class WalletTransactionTest {
     }
 
     private DistributedLock createDistributedLock(boolean lockedResult) {
-        DistributedLock mockedRedisLock = mock(DistributedLock.class);
-        when(mockedRedisLock.lock(anyString())).thenReturn(lockedResult);
+        DistributedLock mockedRedisLock = new DistributedLock(){     
+            @Override
+            public void unlock(String lockKey) {
+            }       
+            @Override
+            public boolean lock(String lockKey) {
+                return lockedResult;
+            }
+        };
         return mockedRedisLock;
     }
 

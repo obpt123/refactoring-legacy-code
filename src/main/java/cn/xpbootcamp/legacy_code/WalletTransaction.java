@@ -49,35 +49,22 @@ public class WalletTransaction {
         validateInput();
         if (status == STATUS.EXECUTED)
             return true;
-        boolean isLocked = false;
-        try {
-            isLocked = distributedLock.lock(id);
-
-            // 锁定未成功，返回false
-            if (!isLocked) {
-                return false;
+        distributedLock.runWithLock(this.id, () -> {
+            if (status == STATUS.EXECUTED) {
+                return;
             }
-            if (status == STATUS.EXECUTED)
-                return true; // double check
-
             if (hasExpired()) {
-                this.status = STATUS.EXPIRED;
-                return false;
+                status = STATUS.EXPIRED;
+                return;
             }
-            String walletTransactionId = walletService.moveMoney(id, buyerId, sellerId, amount);
+            walletTransactionId = walletService.moveMoney(id, buyerId, sellerId, amount);
             if (walletTransactionId != null) {
-                this.walletTransactionId = walletTransactionId;
                 this.status = STATUS.EXECUTED;
-                return true;
             } else {
                 this.status = STATUS.FAILED;
-                return false;
             }
-        } finally {
-            if (isLocked) {
-                distributedLock.unlock(id);
-            }
-        }
+        });
+        return STATUS.EXECUTED == status;
     }
 
     private void validateInput() throws InvalidTransactionException {
