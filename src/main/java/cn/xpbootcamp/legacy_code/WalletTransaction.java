@@ -14,19 +14,18 @@ import javax.transaction.InvalidTransactionException;
 import com.spun.util.StringUtils;
 
 public class WalletTransaction {
-    private String id;
+    private String transactionId;
 
     private Order order;
-    private STATUS status;
+    private STATUS status = STATUS.TO_BE_EXECUTED;
 
     WalletService walletService = new WalletServiceImpl();
     DistributedLock distributedLock = new RedisDistributedLockImpl();
     IdGenerator idGenerator = new IdGeneratorImpl();
 
     public WalletTransaction(String preAssignedId, Order order) {
-        this.id = buildId(preAssignedId);
+        this.transactionId = buildTransactionId(preAssignedId);
         this.order = order;
-        this.status = STATUS.TO_BE_EXECUTED;
     }
 
     public WalletTransaction(String preAssignedId, long buyerId, long sellerId, long productId, String orderId) {
@@ -42,7 +41,7 @@ public class WalletTransaction {
         });
     }
 
-    private String buildId(String preAssignedId) {
+    private String buildTransactionId(String preAssignedId) {
         if (StringUtils.isEmpty(preAssignedId)) {
             return preAssignedId.startsWith("t_") ? preAssignedId : "t_" + preAssignedId;
         } else {
@@ -55,7 +54,7 @@ public class WalletTransaction {
         if (hasExecuted()) {
             return true;
         }
-        distributedLock.runWithLock(this.id, () -> {
+        distributedLock.runWithLock(this.transactionId, () -> {
             if (hasExecuted()) {
                 return;
             }
@@ -63,7 +62,7 @@ public class WalletTransaction {
                 status = STATUS.EXPIRED;
                 return;
             }
-            String moveMoneyResult = walletService.moveMoney(id, order.getBuyerId(), order.getSellerId(),
+            String moveMoneyResult = walletService.moveMoney(transactionId, order.getBuyerId(), order.getSellerId(),
                     order.getAmount());
             status = moveMoneyResult != null ? STATUS.EXECUTED : STATUS.FAILED;
         });
