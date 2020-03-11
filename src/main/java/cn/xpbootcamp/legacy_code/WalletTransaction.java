@@ -1,5 +1,6 @@
 package cn.xpbootcamp.legacy_code;
 
+import cn.xpbootcamp.legacy_code.entity.Order;
 import cn.xpbootcamp.legacy_code.enums.STATUS;
 import cn.xpbootcamp.legacy_code.service.DistributedLock;
 import cn.xpbootcamp.legacy_code.service.IdGenerator;
@@ -14,12 +15,9 @@ import com.spun.util.StringUtils;
 
 public class WalletTransaction {
     private String id;
-    private long buyerId;
-    private long sellerId;
-    private long productId;
-    private String orderId;
+
     private long createdTimestamp;
-    private double amount = 0;
+    private Order order;
     private STATUS status;
     private String walletTransactionId;
 
@@ -27,14 +25,23 @@ public class WalletTransaction {
     DistributedLock distributedLock = new RedisDistributedLockImpl();
     IdGenerator idGenerator = new IdGeneratorImpl();
 
-    public WalletTransaction(String preAssignedId, long buyerId, long sellerId, long productId, String orderId) {
+    public WalletTransaction(String preAssignedId, Order order) {
         this.id = buildId(preAssignedId);
-        this.buyerId = buyerId;
-        this.sellerId = sellerId;
-        this.productId = productId;
-        this.orderId = orderId;
+        this.order = order;
         this.status = STATUS.TO_BE_EXECUTED;
         this.createdTimestamp = System.currentTimeMillis();
+    }
+
+    public WalletTransaction(String preAssignedId, long buyerId, long sellerId, long productId, String orderId) {
+        this(preAssignedId, new Order() {
+            {
+                setAmount(0);
+                setBuyerId(buyerId);
+                setSellerId(sellerId);
+                setProductId(productId);
+                setOrderId(orderId);
+            }
+        });
     }
 
     private String buildId(String preAssignedId) {
@@ -47,7 +54,7 @@ public class WalletTransaction {
 
     public boolean execute() throws InvalidTransactionException {
         validateInput();
-        if (hasExecuted()){
+        if (hasExecuted()) {
             return true;
         }
         distributedLock.runWithLock(this.id, () -> {
@@ -58,7 +65,8 @@ public class WalletTransaction {
                 status = STATUS.EXPIRED;
                 return;
             }
-            walletTransactionId = walletService.moveMoney(id, buyerId, sellerId, amount);
+            walletTransactionId = walletService.moveMoney(id, order.getBuyerId(), order.getSellerId(),
+                    order.getAmount());
             if (walletTransactionId != null) {
                 this.status = STATUS.EXECUTED;
             } else {
@@ -73,7 +81,7 @@ public class WalletTransaction {
     }
 
     private void validateInput() throws InvalidTransactionException {
-        if (amount < 0.0) {
+        if (order.getAmount() < 0.0) {
             throw new InvalidTransactionException("This is an invalid transaction");
         }
     }
