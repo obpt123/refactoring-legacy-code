@@ -15,17 +15,45 @@ import cn.xpbootcamp.legacy_code.utils.RedisDistributedLock;
 
 public class WalletTransactionTest {
     @Test
-    public void shouldReturnTrueWhenExecute() throws InvalidTransactionException {
+    public void shouldReturnTrueWhenExecuteAndCanLock() throws InvalidTransactionException {
 
         RedisDistributedLock redisDistributedLock = createDistributedLock(true);
         WalletService walletService = createWalletService("fake_moveMoneyId");
         WalletTransaction transaction = new WalletTransaction("fake_preId", 1L, 2L, 123L, "fake_orderId");
         setDistributedLock(transaction, redisDistributedLock);
         setWalletService(transaction, walletService);
-       
+
         boolean executeResult = transaction.execute();
 
-        assertTrue(executeResult);
+        assertEquals(true, executeResult);
+    }
+
+    @Test
+    public void shouldReturnFalseWhenExecuteAndCannotLock() throws InvalidTransactionException {
+
+        RedisDistributedLock redisDistributedLock = createDistributedLock(false);
+        WalletService walletService = createWalletService("fake_moveMoneyId");
+        WalletTransaction transaction = new WalletTransaction("fake_preId", 1L, 2L, 123L, "fake_orderId");
+        setDistributedLock(transaction, redisDistributedLock);
+        setWalletService(transaction, walletService);
+
+        boolean executeResult = transaction.execute();
+
+        assertEquals(false, executeResult);
+    }
+
+    @Test
+    public void shouldReturnFalseWhenExecuteAndCannotMoveMoney() throws InvalidTransactionException {
+
+        RedisDistributedLock redisDistributedLock = createDistributedLock(false);
+        WalletService walletService = createWalletService(null);
+        WalletTransaction transaction = new WalletTransaction("fake_preId", 1L, 2L, 123L, "fake_orderId");
+        setDistributedLock(transaction, redisDistributedLock);
+        setWalletService(transaction, walletService);
+
+        boolean executeResult = transaction.execute();
+
+        assertEquals(false, executeResult);
     }
 
     private RedisDistributedLock createDistributedLock(boolean lockedResult) {
