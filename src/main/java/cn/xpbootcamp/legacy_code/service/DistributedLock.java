@@ -1,8 +1,23 @@
 package cn.xpbootcamp.legacy_code.service;
 
 public interface DistributedLock {
-    
-    boolean lock(String transactionId);
 
-    void unlock(String transactionId);
+    boolean lock(String lockKey);
+
+    void unlock(String lockKey);
+
+    default boolean runWithLock(String lockKey, Action action) {
+        boolean locked = lock(lockKey);
+        try {
+            if (action != null) {
+                action.run();
+            }
+            return locked;
+        } finally {
+            if (locked) {
+                unlock(lockKey);
+            }
+        }
+    }
+
 }
