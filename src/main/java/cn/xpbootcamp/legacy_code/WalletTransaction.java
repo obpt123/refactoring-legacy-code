@@ -47,10 +47,12 @@ public class WalletTransaction {
 
     public boolean execute() throws InvalidTransactionException {
         validateInput();
-        if (status == STATUS.EXECUTED)
+        if (!hasExecuted()){
+            
+        }
             return true;
         distributedLock.runWithLock(this.id, () -> {
-            if (status == STATUS.EXECUTED) {
+            if (hasExecuted()) {
                 return;
             }
             if (hasExpired()) {
@@ -65,6 +67,10 @@ public class WalletTransaction {
             }
         });
         return STATUS.EXECUTED == status;
+    }
+
+    private boolean hasExecuted() {
+        return status == STATUS.EXECUTED;
     }
 
     private void validateInput() throws InvalidTransactionException {
