@@ -6,9 +6,18 @@ public class Order {
     private long productId;
     private String orderId;
     private double amount;
+    private long createdTimestamp;
 
     public long getBuyerId() {
         return buyerId;
+    }
+
+    public long getCreatedTimestamp() {
+        return createdTimestamp;
+    }
+
+    public void setCreatedTimestamp(long createdTimestamp) {
+        this.createdTimestamp = createdTimestamp;
     }
 
     public double getAmount() {

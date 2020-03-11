@@ -18,7 +18,6 @@ import com.spun.util.StringUtils;
 public class WalletTransaction {
     private String id;
 
-    private long createdTimestamp;
     private Order order;
     private STATUS status;
     private String walletTransactionId;
@@ -32,7 +31,6 @@ public class WalletTransaction {
         this.id = buildId(preAssignedId);
         this.order = order;
         this.status = STATUS.TO_BE_EXECUTED;
-        this.createdTimestamp = systemClocker.currentTimeMillis();
     }
 
     public WalletTransaction(String preAssignedId, long buyerId, long sellerId, long productId, String orderId) {
@@ -43,6 +41,7 @@ public class WalletTransaction {
                 setSellerId(sellerId);
                 setProductId(productId);
                 setOrderId(orderId);
+                setCreatedTimestamp(System.currentTimeMillis());
             }
         });
     }
@@ -56,7 +55,7 @@ public class WalletTransaction {
     }
 
     public boolean execute() throws InvalidTransactionException {
-        validateInput();
+        validateOrder();
         if (hasExecuted()) {
             return true;
         }
@@ -83,7 +82,7 @@ public class WalletTransaction {
         return status == STATUS.EXECUTED;
     }
 
-    private void validateInput() throws InvalidTransactionException {
+    private void validateOrder() throws InvalidTransactionException {
         if (order.getAmount() < 0.0) {
             throw new InvalidTransactionException("This is an invalid transaction");
         }
@@ -91,7 +90,7 @@ public class WalletTransaction {
 
     private boolean hasExpired() {
         long executionInvokedTimestamp = systemClocker.currentTimeMillis();
-        return executionInvokedTimestamp - createdTimestamp > 20 * 24 * 3600 * 1000;
+        return executionInvokedTimestamp - order.getCreatedTimestamp() > 20 * 24 * 3600 * 1000;
     }
 
 }
