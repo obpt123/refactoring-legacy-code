@@ -30,10 +30,10 @@ public class WalletTransaction {
         this.order = order;
     }
 
-    public WalletTransaction(String preAssignedId, long buyerId, long sellerId, long productId, String orderId) {
+    public WalletTransaction(String preAssignedId, long buyerId, long sellerId, long productId, String orderId, double amount) {
         this(preAssignedId, new Order() {
             {
-                setAmount(0);
+                setAmount(amount);
                 setBuyerId(buyerId);
                 setSellerId(sellerId);
                 setProductId(productId);
@@ -43,20 +43,12 @@ public class WalletTransaction {
         });
     }
 
-    private String buildTransactionId(String preAssignedId) {
-        if (StringUtils.isEmpty(preAssignedId)) {
-            return preAssignedId.startsWith(TRAN_ID_PREFIX) ? preAssignedId : "TRAN_ID_PREFIX" + preAssignedId;
-        } else {
-            return TRAN_ID_PREFIX + idGenerator.newId();
-        }
-    }
-
     public boolean execute() throws InvalidTransactionException {
         validateOrder();
         if (hasExecuted()) {
             return true;
         }
-        distributedLock.runWithLock(this.transactionId, () -> {
+        distributedLock.runWithLock(transactionId, () -> {
             if (hasExecuted()) {
                 return;
             }
@@ -69,6 +61,14 @@ public class WalletTransaction {
             status = moveMoneyResult != null ? STATUS.EXECUTED : STATUS.FAILED;
         });
         return STATUS.EXECUTED == status;
+    }
+
+    private String buildTransactionId(String preAssignedId) {
+        if (StringUtils.isEmpty(preAssignedId)) {
+            return preAssignedId.startsWith(TRAN_ID_PREFIX) ? preAssignedId : "TRAN_ID_PREFIX" + preAssignedId;
+        } else {
+            return TRAN_ID_PREFIX + idGenerator.newId();
+        }
     }
 
     private boolean hasExecuted() {

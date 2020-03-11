@@ -19,7 +19,7 @@ public class WalletTransactionTest {
 
         DistributedLock redisDistributedLock = createDistributedLock(true);
         WalletService walletService = createWalletService("fake_moveMoneyId");
-        WalletTransaction transaction = new WalletTransaction("fake_preId", 1L, 2L, 123L, "fake_orderId");
+        WalletTransaction transaction = new WalletTransaction("fake_preId", 1L, 2L, 123L, "fake_orderId", 10);
         setDistributedLock(transaction, redisDistributedLock);
         setWalletService(transaction, walletService);
 
@@ -33,7 +33,7 @@ public class WalletTransactionTest {
 
         DistributedLock redisDistributedLock = createDistributedLock(false);
         WalletService walletService = createWalletService("fake_moveMoneyId");
-        WalletTransaction transaction = new WalletTransaction("fake_preId", 1L, 2L, 123L, "fake_orderId");
+        WalletTransaction transaction = new WalletTransaction("fake_preId", 1L, 2L, 123L, "fake_orderId", 10);
         setDistributedLock(transaction, redisDistributedLock);
         setWalletService(transaction, walletService);
 
@@ -47,7 +47,7 @@ public class WalletTransactionTest {
 
         DistributedLock redisDistributedLock = createDistributedLock(false);
         WalletService walletService = createWalletService(null);
-        WalletTransaction transaction = new WalletTransaction("fake_preId", 1L, 2L, 123L, "fake_orderId");
+        WalletTransaction transaction = new WalletTransaction("fake_preId", 1L, 2L, 123L, "fake_orderId", 10);
         setDistributedLock(transaction, redisDistributedLock);
         setWalletService(transaction, walletService);
 
